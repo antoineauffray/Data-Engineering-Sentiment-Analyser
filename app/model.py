@@ -8,21 +8,20 @@ app = Flask(__name__)
 
 def svm_model(sentence):
     load_model = joblib.load('svm.sav')
-    return load_model.predict([sentence])
+    return load_model.predict([sentence])[0]
 
 
 @app.route('/result', methods=['POST', 'GET'])
 def predict():
     if request.method == 'POST':
-        sentence = request.form['Name']  # name of the insert from html
-        # blob = TextBlob(sentence)
+        sentence = request.form['text_to_analyse']
         result = svm_model(sentence)
-        return render_template('index.html',
-                               result=result)
+        return render_template('index.html', result=result, sentence=sentence)
     else:
         return render_template('index.html')
 
 
 if __name__ == '__main__':
+    redis_client = StrictRedis(host='redis', port=6379)
     app.debug = True
-    app.run()
+    app.run(host='0.0.0.0')
